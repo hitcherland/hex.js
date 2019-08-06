@@ -4,14 +4,15 @@
   "description": "",
   "public": false,
   "scripts": {
-    "dev": "npx webpack --mode development",
-    "build": "npx webpack --mode production"
+    "start": "webpack-dev-server --open --config webpack.dev.js",
+    "build": "npx webpack --config webpack.production.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6"
+    "webpack-cli": "^3.3.6",
+    "webpack-merge": "^4.2.1"
   }
 }
