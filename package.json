@@ -1,0 +1,17 @@
+{
+  "name": "libhex",
+  "version": "1.0.0",
+  "description": "",
+  "public": false,
+  "scripts": {
+    "dev": "npx webpack --mode development",
+    "build": "npx webpack --mode production"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.3.6"
+  }
+}
