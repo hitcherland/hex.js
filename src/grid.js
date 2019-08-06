@@ -22,9 +22,15 @@ class HexGrid {
     }
 
     render() {
-        for(var hexagon of this.hexagons.sort((a, b) => a.node.y(1) > b.node.y(1))) {
-            this.renderFunction(hexagon);
-        }
+        this.hexagons.sort((a, b) => { 
+            var ay = a.node.y(1);
+            var by = b.node.y(1);
+            if(ay > by) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }).forEach(hexagon => this.renderFunction(hexagon));
     }
 }
 
