@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset='utf-8'/>
+        <style>
+            html, body { margin: 0; }
+            #hexgrid {
+                position: absolute;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="hexgrid" width=200 height=200 style='position: absolute'></canvas>
+        <script src="hex.js"></script>
+        <script>
+            var canvas = document.getElementById('hexgrid');
+            var ctx = canvas.getContext('2d');
+            var hexRadius = 25;
+            var colours = {}
+            var offsets = {}
+
+            function getRandomColor() {
+              var letters = '23456789ABCD';
+              var color = '#';
+              for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 12)];
+              }
+              return color;
+            }
+
+            var height = 20;
+
+            var render = function(hexagon) {
+                var cx = ctx.canvas.width / 2.0;
+                var cy = ctx.canvas.height / 2.0;
+                var pos = hexagon.node.to_cartesian(hexRadius);
+                pos.x += cx;
+                pos.y += cy;
+
+                if(colours[hexagon.node.toString()] === undefined) {
+                    colours[hexagon.node.toString()] = getRandomColor();
+                    offsets[hexagon.node.toString()] = Math.random() * Math.PI * 2.0;
+                }
+
+                var h = 0.5 * height + 0.2 * (1 + Math.sin(performance.now() * Math.PI * 2 / 2300 + offsets[hexagon.node.toString()]) ) * height;
+
+                ctx.fillStyle = colours[hexagon.node];
+                ctx.strokeStyle = '#000';
+                ctx.lineJoin = "round"
+
+                ctx.lineWidth = hexRadius / 15.0;
+                for(var i of [4, 3, 5, 0, 2, 1,]) {
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x + hexRadius * Math.cos(Math.PI * i / 3.0),
+                               pos.y + hexRadius * Math.sin(Math.PI * i / 3.0));
+                    ctx.lineTo(pos.x + hexRadius * Math.cos(Math.PI * i / 3.0),
+                               pos.y + hexRadius * Math.sin(Math.PI * i / 3.0) - h);
+                    ctx.lineTo(pos.x + hexRadius * Math.cos(Math.PI * (i + 1) / 3.0),
+                               pos.y + hexRadius * Math.sin(Math.PI * (i + 1) / 3.0) - h);
+                    ctx.lineTo(pos.x + hexRadius * Math.cos(Math.PI * (i + 1) / 3.0),
+                               pos.y + hexRadius * Math.sin(Math.PI * (i + 1) / 3.0));
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.fill();
+                }
+
+                ctx.lineWidth = hexRadius / 25.0;
+                hex.fillHexagon(ctx, pos.x, pos.y - h, hexRadius);
+                hex.strokeHexagon(ctx, pos.x, pos.y - h, hexRadius);
+
+            };
+
+            var grid = new hex.HexGrid(15, render);
+            hexRadius = grid.calculate_hex_radius(canvas.width, canvas.height);
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                hexRadius = grid.calculate_hex_radius(canvas.width * 0.8, canvas.height * 0.8);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                grid.render();
+            }
+
+            window.addEventListener('resize', resize);
+            window.addEventListener('mousemove', (e) => {
+                var x = e.clientX;
+                var y = e.clientY;
+                var h = Math.min(canvas.width, canvas.height) * 0.1;
+                height = h * (1.0 - e.clientY / canvas.height);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                grid.render();
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                grid.render();
+            }
+
+            resize();
+            animate();
+
+        </script>
+    </body>
+</html>
