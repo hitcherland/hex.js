@@ -18,13 +18,13 @@ var render = function(hexagon) {
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    hexRadius = grid.calculate_hex_radius(canvas.width * 0.8, canvas.height * 0.8);
+    hexRadius = grid.calculate_hex_radius(canvas.width * 0.8, canvas.height * 0.8, zoom);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     grid.render();
 }
 
 var prevDiff = undefined;
-var zoom = 1;
+var zoom = 1.0;
 function pointermove(e) {
     var pos = { 
         x: e.clientX - canvas.width / 2.0,
@@ -95,12 +95,18 @@ var styles = {
 var canvas = document.getElementById('game');
 var ctx = canvas.getContext('2d');
 var grid = new hex.HexGrid(2, render);
-var hexRadius = grid.calculate_hex_radius(canvas.width, canvas.height);
+var hexRadius = grid.calculate_hex_radius(canvas.width, canvas.height, zoom);
 
 var touches = [];
 
 canvas.addEventListener('pointerdown', pointerdown);
 canvas.addEventListener('pointermove', pointermove);
+canvas.addEventListener('wheel', e => {
+    zoom -= e.deltaY / 30.0;
+    if(zoom < 0.1)
+        zoom = 0.1
+    resize();
+});
 window.addEventListener('resize', resize);
 
 resize();

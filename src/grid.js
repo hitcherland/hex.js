@@ -15,11 +15,12 @@ class HexGrid {
         }});
     }
 
-    calculate_hex_radius(width, height) {
+    calculate_hex_radius(width, height, zoom) {
+        zoom = zoom === undefined ? 1.0 : zoom;
         var n = (2 * this.radius + 1)
         var w = width / (0.5 + 1.5 * n);
         var h = height / (SQRT_3 * n);
-        return Math.min(w, h);
+        return Math.min(w, h) * zoom;
     }
 
     render() {
