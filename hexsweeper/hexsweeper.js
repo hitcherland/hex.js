@@ -23,23 +23,64 @@ function resize() {
     grid.render();
 }
 
-function cursormove(e) {
+var prevDiff = undefined;
+var zoom = 1;
+function pointermove(e) {
     var pos = { 
         x: e.clientX - canvas.width / 2.0,
         y: e.clientY - canvas.height / 2.0
     };
 
-    Object.values(grid.hexagons).filter(x => x.state & 1 == 1).forEach(x => x.state -= 1)
-
-    var coord = hex.HexNode.from_cartesian(pos, hexRadius);
-    var hexagon = grid.hexagons[coord];
-    if(hexagon !== undefined) {
-        hexagon.state += 1
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        grid.render();
+    for(var i=0; i<touches.length; i++) {
+        var ev = touches[i];
+        if(ev.pointerId == e.pointerId) {
+            touches[i] = ev;
+        }
     }
 
+    Object.values(grid.hexagons).filter(x => x.state & 1 == 1).forEach(x => x.state -= 1)
+
+    if(touches.length == 2) {
+        var curDiff = Math.abs(touches[0].clientX - touches[1].clientX);
+        if(prevDiff > 0) {
+            if(curDiff > prevDiff) {
+                console.log(curDiff);
+                //zoom in
+            }
+            if(curDiff < prevDiff) {
+                //zoom out
+            }
+
+        }
+        prevDiff = curDiff;
+
+    } else {
+
+        var coord = hex.HexNode.from_cartesian(pos, hexRadius);
+        var hexagon = grid.hexagons[coord];
+        if(hexagon !== undefined) {
+            hexagon.state += 1
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    grid.render();
 }
+
+function pointerdown(e) {
+    touches.push(e)
+}
+
+function pointerup(e) {
+    for(var i=0; i<touches.length; i++) {
+        var ev = touches[i];
+        if(ev.pointerId == e.pointerId) {
+            touches.splice(i, 1);
+        }
+    }
+}
+
+
 
 var states = {
     'UNREVEALED': 0,
@@ -56,8 +97,10 @@ var ctx = canvas.getContext('2d');
 var grid = new hex.HexGrid(2, render);
 var hexRadius = grid.calculate_hex_radius(canvas.width, canvas.height);
 
-canvas.addEventListener('mousemove', cursormove);
-canvas.addEventListener('touchmove', cursormove);
+var touches = [];
+
+canvas.addEventListener('pointerdown', pointerdown);
+canvas.addEventListener('pointermove', pointermove);
 window.addEventListener('resize', resize);
 
 resize();
