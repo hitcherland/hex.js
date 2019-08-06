@@ -27,16 +27,16 @@ class HexNode {
     static from_cartesian(cartesian, size, type, round) {
         var q, r;
         type = type === undefined ? HexNodeType.FLAT_TOP : type;
-        round = round === undefined ? false : round;
+        round = round === undefined ? true : round;
         if(type == HexNodeType.FLAT_TOP) {
             q = 2 * cartesian.x / (3.0 * size);
-            r = (- cartesian.x / 3.0 + SQRT3_3 * cartesian.y) / (1.0 * size);
+            r = (- cartesian.x / 3.0 + SQRT_3_3 * cartesian.y) / (1.0 * size);
         } else {
-            q = (SQRT3_3 * cartesian.x - cartesian.y / 3.0) / (1.0 * size);
+            q = (SQRT_3_3 * cartesian.x - cartesian.y / 3.0) / (1.0 * size);
             r = 2 * cartesian.y / (3.0 * size);
         }
 
-        return this.constructor(q, r).round();
+        return (new this(q, r)).round();
     }
 
     toString() {
@@ -78,7 +78,7 @@ class HexNode {
             Rr = - Rq - Rs;
         }
 
-        return this.constructor(Rq, Rr);
+        return new this.constructor(Rq, Rr);
     }
 
     to_cube() {

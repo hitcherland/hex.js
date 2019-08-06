@@ -8,7 +8,8 @@ class HexGrid {
 
         this.radius = radius;
         this.renderFunction = renderFunction;
-        this.hexagons = new node.HexNode(0, 0).area(radius).map(hex => { return {
+        this.hexagons = {}
+        new node.HexNode(0, 0).area(radius).forEach(hex => { return this.hexagons[hex.toString()] = {
             node: hex,
             state: 0,
         }});
@@ -22,7 +23,7 @@ class HexGrid {
     }
 
     render() {
-        this.hexagons.sort((a, b) => { 
+        Object.values(this.hexagons).sort((a, b) => { 
             var ay = a.node.y(1);
             var by = b.node.y(1);
             if(ay > by) {
