@@ -27,15 +27,18 @@
             }
 
 
-            var render = function(ctx, pos, hexRadius, state) {
-                var key = pos.x + ", " + pos.y;
+            var render = function(ctx, pos, hexRadius, state, h) {
+                var key = h.toString() 
+                var q = Math.floor( 16 * ( 1 - Math.max(h.q, h.r, h.s) / hexRadius))
                 if(colours[key] === undefined) {
-                    colours[key] = getRandomColor();
+                    var C = '0123456789ABCDEF'
+                    var c = '#' + C[q] + C[q] + C[q]
+                    colours[key] = c; //getRandomColor();
                     offsets[key] = Math.random() * Math.PI * 2.0;
                 }
 
-                var height = hexRadius * 2;
-                var h = 0.5 * height + 0.2 * (1 + Math.sin(performance.now() * Math.PI * 2 / 2300 + pos.x ** 2 * pos.y ** 2)) * height;
+                var height = (hexRadius - Math.max(h.q, h.r, h.s)) * 3;
+                var h = 0.1 * height + 0.2 * (1 + Math.sin(performance.now() * Math.PI * 2 / 3300 + 2 * Math.PI * Math.min(h.q, h.r, h.s) / hexRadius)) * height;
 
                 ctx.fillStyle = colours[key];
                 ctx.strokeStyle = '#000';
@@ -63,11 +66,12 @@
 
             };
 
-            var grid = new hex.HexGrid(canvas, 5, render, {
+            var grid = new hex.HexGrid(canvas, 8, render, {
                 'singletap': (h) => {
                 }
             });
             grid.radiusPadding = 3;
+            grid.zoomRadius = grid.radius + grid.radiusPadding;
 
             function animate() {
                 requestAnimationFrame(animate);
