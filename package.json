@@ -7,7 +7,7 @@
     "start": "webpack-dev-server --open --config webpack.dev.js",
     "build": "npx webpack --config webpack.production.js",
     "gh-pages": "npx webpack --config webpack.gh-pages.js",
-    "start-hexsweeper": "webpack-dev-server --open --config webpack.hexsweeper.dev.js",
+    "start-hexsweeper": "webpack-dev-server --open --config webpack.hexsweeper.dev.js --host 0.0.0.0",
     "hexsweeper": "npx webpack --config webpack.hexsweeper.dev.js"
   },
   "keywords": [],

@@ -1,136 +1,176 @@
-var render = function(ctx, hexagon) {
-    var cx = ctx.canvas.width / 2.0;
-    var cy = ctx.canvas.height / 2.0;
-    var pos = hexagon.node.to_cartesian(hexRadius);
-    pos.x += cx;
-    pos.y += cy;
+function shuffle(arra1) {
+    let ctr = arra1.length;
+    let temp;
+    let index;
 
-    ctx.strokeStyle = styles[hexagon.state].stroke;
-    ctx.fillStyle = styles[hexagon.state].fill;
+    while (ctr > 0) {
+        index = Math.floor(Math.random() * ctr);
+        ctr--;
+        temp = arra1[ctr];
+        arra1[ctr] = arra1[index];
+        arra1[index] = temp;
+    }
+    return arra1;
+}
 
-    ctx.lineWidth = hexRadius / 25.0;
+function render(ctx, pos, hexRadius, state) {
+    var s = state === undefined ? 'unrevealed' : state.name;
+
+    ctx.strokeStyle = styles[s].stroke;
+    ctx.fillStyle = styles[s].fill;
+    ctx.lineWidth = hexRadius / 15.0;
     ctx.lineJoin = "round"
 
-    hex.fillHexagon(ctx, pos.x, pos.y, hexRadius * 0.9);
-    hex.strokeHexagon(ctx, pos.x, pos.y, hexRadius * 0.9);
+    var H = hexRadius * 0.9;
+    if(s == 'not_bomb' && state.bomb_count == 0) {
+        H = hexRadius * 0.5;
+    }
+
+    if(game_over) {
+        H *= 0.8;
+    }
+
+    hex.fillHexagon(ctx, pos.x, pos.y, H);
+    hex.strokeHexagon(ctx, pos.x, pos.y, H);
+
+    if(state !== undefined && state.flagged) {
+        ctx.strokeStyle = styles['bomb'].stroke;
+        ctx.beginPath();
+        ctx.lineWidth = H / 10.0
+        ctx.arc(pos.x, pos.y - H / 6.0 , H / 3.0, Math.PI, 0);
+        ctx.lineTo(pos.x - H / 3.0, pos.y - H / 6.0);
+        ctx.lineTo(pos.x - H / 3.0, pos.y + H / 3.0);
+        ctx.lineTo(pos.x + H / 3.0, pos.y + H / 3.0);
+        ctx.lineTo(pos.x + H / 3.0, pos.y - H / 6.0);
+        ctx.lineTo(pos.x - H / 3.0, pos.y + H / 3.0);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+
+
+    if(s == 'unrevealed')
+        return;
+
+    var R = H * 0.1;
+    var P = H * 0.6;
+    ctx.fillStyle = styles['bomb'].fill;
+    ctx.strokeStyle = styles['bomb'].stroke;
+    ctx.lineWidth = H / 25.0;
+    for(var i=0; i<state.bomb_count; i++) {
+        ctx.beginPath();
+        ctx.moveTo(R * Math.sin(Math.PI - Math.PI * i / 3.0) + pos.x,
+                   R * Math.cos(Math.PI - Math.PI * i / 3.0) + pos.y)
+        ctx.lineTo(P * Math.sin(Math.PI - Math.PI * i / 3.0 - Math.PI / 7) + pos.x,
+                   P * Math.cos(Math.PI - Math.PI * i / 3.0 - Math.PI / 7) + pos.y)
+        ctx.lineTo(P * Math.sin(Math.PI - Math.PI * i / 3.0 + Math.PI / 7) + pos.x,
+                   P * Math.cos(Math.PI - Math.PI * i / 3.0 + Math.PI / 7) + pos.y)
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    }
+
 };
 
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    hexRadius = grid.calculate_hex_radius(canvas.width * 0.8, canvas.height * 0.8, grid.zoom);
-    grid.render();
-}
-
-var prevDiff = undefined;
-function pointermove(e) {
-    var pos = { 
-        x: e.clientX - canvas.width / 2.0,
-        y: e.clientY - canvas.height / 2.0
-    };
-
-    for(var i=0; i<touches.length; i++) {
-        var ev = touches[i];
-        if(ev.identifier == e.identifier) {
-            touches[i] = ev;
-        }
-    }
-
-    Object.values(grid.hexagons)
-          .filter(x => x.state & 1 == 1)
-          .forEach(x => x.state -= 1)
-
-    if(touches.length == 2) {
-        var curDiff = Math.abs(touches[0].clientX - touches[1].clientX);
-        if(prevDiff > 0) {
-            if(curDiff > prevDiff) {
-                zoomControl(3)
-                //zoom in
-            }
-            if(curDiff < prevDiff) {
-                zoomControl(-3)
-                //zoom out
-            }
-
-        }
-        prevDiff = curDiff;
-
-    } else {
-        var coord = hex.HexNode.from_cartesian(pos, hexRadius);
-        var hexagon = grid.hexagons[coord];
-        if(hexagon !== undefined) {
-            hexagon.state += 1
+function restart() {
+    game_over = false;
+    Object.values(grid.hexagons).forEach(x => x.state = {name: 'unrevealed', bomb_count: 0, flagged: false});
+    var s = shuffle(Object.values(grid.hexagons));
+    for(var i=0; i<s.length * 0.2; i++) {
+        var h = s[i];
+        h.state.bomb_count = -1;
+        for(var n of h.node.neighbours()) {
+            var N = grid.hexagons[n];
+            if(N !== undefined && N.state.bomb_count >= 0)
+                N.state.bomb_count += 1
         }
     }
     grid.render();
 }
 
-function pointerdown(e) {
-    touches.push(e)
-    grid.render();
-}
+function is_game_over() {
+    var hexagons = Object.values(grid.hexagons);
+    var failed = hexagons.filter(h => h.state.name == 'bomb').length > 0;
+    if(failed)
+        return true;
 
-function pointerup(e) {
-    for(var i=0; i<touches.length; i++) {
-        var ev = touches[i];
-        if(ev.identifier == e.identifier) {
-            touches.splice(i, 1);
-        }
-    }
+    var win = hexagons.filter(h => h.state.name == 'unrevealed' && h.state.bomb_count >= 0).length == 0;
+    if(win)
+        return true;
 
-    Object.values(grid.hexagons)
-          .filter(x => x.state & 1 == 1)
-          .forEach(x => x.state -= 1)
+    var other_win = hexagons.filter(h => (h.state.flagged && h.state.bomb_count >= 0)
+                                    || (!h.state.flagged && h.state.bomb_count < 0)
+                                   ).length == 0;
 
-    grid.render();
-}
+    if(other_win)
+        return true;
 
-function zoomControl(d) {
-    grid.zoom -= d / 30.0;
-    if(grid.zoom < 1)
-        grid.zoom = 1
-    resize();
-}
-
-var states = {
-    'UNREVEALED': 0,
-    'UNREVEALED_HOVER': 1,
-    'UNREVEALED_ACTIVE': 2,
+    return false;
 }
 
 var styles = {
-    0: {'stroke': '#000', 'fill': '#ccc'},
-    1: {'stroke': '#222', 'fill': '#f00'},
-    2: {'stroke': '#222', 'fill': '#0f0'},
+    'unrevealed': {'stroke': '#6251a9', 'fill': '#c8b7dd'},
+    'not_bomb': {'stroke': '#322159', 'fill': '#c8b7dd'},
+    'bomb': {'stroke': '#000', 'fill': '#f00'},
 }
 
 var canvas = document.getElementById('game');
+canvas.style = 'background: #fff00f';
+
+var game_over = false;
+function reveal(h) {
+    if(h.state.bomb_count < 0) {
+        h.state.name = 'bomb'; 
+    } else {
+        h.state.name = 'not_bomb'; 
+        if(h.state.bomb_count == 0) {
+            for(var neighbour of h.node.neighbours()) {
+                var N = grid.hexagons[neighbour];
+                if(N !== undefined && N.state.name == 'unrevealed') {
+                    reveal(N);
+                }
+            }
+        }
+    }
+}
+
 var grid = new hex.HexGrid(canvas, 2, render, {
-    'tap': (h) => {console.log(h); h.state = 2; grid.render();},
-    'pinch': (d) => {
-        zoomControl(d);
+    'press': (h) => {
+        if(h.state.name == 'unrevealed') {
+            h.state.flagged = ! h.state.flagged;
+            grid.render();
+        }
     },
-    'pan': (d) => {
+
+    'doubletap': (h) => {
+        console.log("double tap");
+        if(h.state.name == 'unrevealed') {
+            h.state.flagged = ! h.state.flagged;
+            grid.render();
+        }
+    },
+    'singletap': (h) => {
+        if(game_over) {
+            restart();
+            return
+        }
+
+        if(h.state.name != 'unrevealed' || h.state.flagged)
+            return;
+
+        h.state.flagged = false;
+        reveal(h);
+
+        if(is_game_over()) {
+            game_over = true;
+            for(var h of Object.values(grid.hexagons).filter(h => h.state.name == 'unrevealed')) {
+                if(h.state.name == 'unrevealed')
+                    reveal(h);
+            }
+        }
+
+        grid.render();
     },
 });
 
-var hexRadius = grid.calculate_hex_radius(canvas.width, canvas.height, grid.zoom);
-
-var touches = [];
-
-/*
-canvas.addEventListener('touchend', (e) => pointerup(e.changedTouches[0]), false);
-canvas.addEventListener('touchcancel', e => pointerup(e.touches[0]), false);
-canvas.addEventListener('mouseup', pointerup, false);
-
-canvas.addEventListener('touchstart', e => pointerdown(e.touches[0]), false);
-canvas.addEventListener('mousedown', pointerdown, false);
-
-canvas.addEventListener('touchmove', e => pointermove(e.touches[0]), false);
-canvas.addEventListener('mousemove', pointermove, false);
-canvas.addEventListener('wheel', e => zoomControl(e.deltaY));
-*/
-
-window.addEventListener('resize', resize);
-
-resize();
+restart();

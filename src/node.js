@@ -104,7 +104,7 @@ class HexNode {
             var upper = Math.min(range, -q + range);
             for(var s = lower; s <= upper; s++) {
                 var r = - q -s
-                output.push(new this.constructor(q, r));
+                output.push(new this.constructor(this.q + q, this.r + r));
             }
         }
 
@@ -112,12 +112,30 @@ class HexNode {
     }
 
     __eq__(obj) {
-        return x.q == this.q && x.r == this.r;
+        return obj.q == this.q && obj.r == this.r;
     }
 
     neighbours() {
         return this.area(1).filter(x => !this.__eq__(x));
     }
+
+    add(obj) {
+        return new this.constructor(this.q + obj.q, this.r + obj.r);
+    }
+
+    subtract(obj) {
+        return new this.constructor(this.q - obj.q, this.r - obj.r);
+    }
+
+    dot(m) {
+        return new this.constructor(this.q * m, this.r * m);
+    }
+
+    lerp(obj, i) {
+        var diff = obj.subtract(this);
+        return this.add(diff.dot(i));
+    }
+
 }
 
 module.exports = { 
