@@ -6,7 +6,9 @@
   "scripts": {
     "start": "webpack-dev-server --open --config webpack.dev.js",
     "build": "npx webpack --config webpack.production.js",
-    "gh-pages": "npx webpack --config webpack.gh-pages.js"
+    "gh-pages": "npx webpack --config webpack.gh-pages.js",
+    "start-hexsweeper": "webpack-dev-server --open --config webpack.hexsweeper.dev.js --host 0.0.0.0",
+    "hexsweeper": "npx webpack --config webpack.hexsweeper.dev.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +16,10 @@
   "devDependencies": {
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2",
     "webpack-merge": "^4.2.1"
+  },
+  "dependencies": {
+    "hammerjs": "^2.0.8"
   }
 }
