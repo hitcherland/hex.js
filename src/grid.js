@@ -35,11 +35,9 @@ class ShortPress extends Hammer.Press {
       this.reset();
       this._timer = setTimeoutContext(() => {
         this.state = Hammer.STATE_RECOGNIZED;
-          console.log("recog", this.state, this);
       }, options.time, this);
 
       this._timer2 = setTimeoutContext(() => {
-        console.log("FAILED", this.state, this);
         this.state = Hammer.STATE_FAILED;
       }, options.timeout, this);
 
@@ -108,7 +106,6 @@ class HexGrid {
 
         this.mc.on('longpress', function(e) {
             var coord = get_coord(e);
-            console.log('longpress', performance.now(), e, e.deltaTime)
             var rad = this_.zoomRadius;
 
             if(this_.hexagons[coord] === undefined)
@@ -118,7 +115,6 @@ class HexGrid {
                 rad -= 1;
                 if(rad < 0 )
                     rad = this_.radius + this_.radiusPadding;
-                console.log("zoomRadius", rad);
             }
             this_.zoomTo(coord, rad);
             this_.render();
@@ -209,7 +205,7 @@ class HexGrid {
             cartesian.x += this.canvas.width / 2.0;
             cartesian.y += this.canvas.height / 2.0;
 
-            this.renderFunction(this.ctx, cartesian, this.hexRadius, hexagon.state)
+            this.renderFunction(this.ctx, cartesian, this.hexRadius, hexagon.state, hexagon.node)
         });
     }
 }
