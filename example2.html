@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>hex.js examples</title>
+        <style>
+            html, body { margin: 0px; background-color: black;}
+            #example2 {
+                position: absolute;
+                margin: 0;
+                width: 80vmin;
+                height: 80vmin;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            div { 
+                text-align: center;
+                font-size: 10vmin;
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <script type="text/javascript" src="hex.js"></script>
+        <div>Overriding hexagon rendering</div>
+        <canvas id="example2"></canvas>
+        <script>
+            var canvas = document.getElementById('example2');
+            
+            var grid = new hex.CanvasHexGrid(canvas, {
+                radius: 5,
+            });
+
+            function randomColour() {
+                var h = 360 * Math.random();
+                var s = 100 * Math.random();
+                var l = 100 * Math.random();
+                return [h, s, l];
+            }
+
+            grid.renderHexagon = function(node, position, data){
+                if(data.colour === undefined) {
+                    data.colour = randomColour();
+                }
+                var h = (data.colour[0] + 360 * performance.now() / 5000.0) % 360.0;
+                var s = (data.colour[1] + 100 * performance.now() / 5000.0) % 100.0;
+                var l = (data.colour[2] + 100 * performance.now() / 5000.0) % 100.0;
+                var col = 'hsl(' + h + ',' + s + '%,' + l + '%)';
+                this.ctx.fillStyle = col;
+                this.ctx.strokeStyle = 'rgba(0,255,255,0.25)';
+                this.ctx.beginPath();
+                this.ctx.arc(position.x, position.y, this.hexagonRadius * 0.2, 0, 2 * Math.PI);
+                this.ctx.closePath();
+                this.ctx.fill();
+                hex.grid.canvas.strokeHexagon(this.ctx, position.x, position.y, this.hexagonRadius);
+            }
+
+            grid.resize();
+
+            var then = 0;
+            function animate() {
+                requestAnimationFrame(animate);
+                var now = performance.now();
+                if(now - then >= 16) {
+                    then = now;
+                    grid.render();
+                }
+            }
+
+            animate();
+        </script>
+    </body>
+</html>
