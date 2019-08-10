@@ -1,18 +1,28 @@
 {
   "name": "libhex",
-  "version": "1.0.0",
+  "version": "1.0.8",
   "description": "a library for making hexagonal based canvas things",
   "scripts": {
-    "build": "npx webpack"
+    "build": "npx webpack",
+    "build:production": "npx webpack --mode=production",
+    "build:examples": "npx webpack --mode=development --output-path ./examples",
+    "start:examples": "npx webpack-dev-server --content-base ./examples"
   },
-  "keywords": ["hexagon", "canvas", "grid"],
+  "main": "src/index.js",
+  "keywords": [
+    "hexagon",
+    "canvas",
+    "grid"
+  ],
   "author": "hitcherland",
   "license": "ISC",
   "devDependencies": {
     "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6"
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.8.0"
   },
   "dependencies": {
-    "hammerjs": "^2.0.8"
+    "hammerjs": "^2.0.8",
+    "three": "^0.107.0"
   }
 }
