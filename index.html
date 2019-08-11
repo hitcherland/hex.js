@@ -6,103 +6,132 @@
         <style>
             html, body {
                 margin: 0px; 
+                background: black;
+            }
+
+            #grid {
+                position: absolute;
+                width: 80%;
+                height: 80%;
+                top: 10%;
+                left: 10%;
+                font-size: 2.5vmin;
+            }
+
+            .node {
+                text-transform: uppercase;
+                font-weight: bold;
+                font-family: sans-serif;
+                color: #000;
+                text-decoration: none;
+            }
+
+            .node:hover {
+                font-size: 150%;
+            }
+
+            .node:before {
+                content: "⬣";
+                color: white;
+                text-shadow: 0px 0px 3px white;
+                z-index: -1;
+                font-weight: lighter;
                 font-family: monospace;
             }
 
-            h1, h2 { text-align: center; }
-
-            canvas {
-                margin: 1rem;
-                width: 30vw;
-                height: 30vw;
-                min-width: 256px;
-                min-height: 256px;
+            .node:hover:before {
+                color: #ddd;
             }
 
-            .wrapper { 
+            [data-hex_r="0"][data-hex_q="0"].node {
+                font-size: 150%;
+                color: white;
+            }
+
+            [data-hex_r="0"][data-hex_q="0"].node:before {
+                color: black;
+                text-shadow: 0px 0px 3px black;
+            }
+
+
+            [data-hex_r="0"][data-hex_q="0"].node:hover {
+                font-size: 170%;
+            }
+
+            [data-hex_r="1"][data-hex_q="0"].node {
+                display: none;
+            }
+
+            /* Background animation courtesy of Manuel Pinto
+             * https://codepen.io/P1N2O/pen/pyBNzX
+             * https://manuelpinto.in
+             */
+            body {
                 width: 100%;
-                display: flex;
-                justify-content: center;
-                justify-content: space-evenly;
-                align-content: center;
-                flex-wrap: wrap
+                height: 100vh;
+                color: #fff;
+                background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+                background-size: 400% 400%;
+                animation: gradientBG 60s ease infinite;
+            }
+
+            @keyframes gradientBG {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
             }
         </style>
     </head>
     <body>
-        <script type="text/javascript" src="hex.js"></script>
-        <h1>hex.js</h1>
-        <h2>examples</h2>
-        <div class="wrapper">
-            <canvas id="example1"></canvas>
-            <canvas id="example2"></canvas>
-            <canvas id="example3"></canvas>
-        </div>
+        <script type="text/javascript" src="/hex.js"></script>
+        <div id="grid"></div>
         <script>
-            var grid1 = new hex.CanvasHexGrid(document.getElementById('example1'));
-            grid1.resize();
+            var domParent = document.getElementById('grid');
+            var grid = new hex.DOMHexagonalGrid({
+                radius: 1,
+                domParent: domParent,
+                elementType: 'a',
+                postInitialise: function() {
+                    var rect = this._pre_rect;
+                    var hR = this.calculateNodeRadius(rect.width, rect.height);
 
+                    hex.DOMHexagonalGrid.prototype.postInitialise.call(this);
 
-            var grid2 = new hex.CanvasHexGrid(document.getElementById('example2'), {
-                radius: 5,
-            });
+                    this.style.innerHTML += `
+[data-hexgrid="${this.domParent.dataset.hexgrid}"] .node:before { 
+    position: absolute;
+    font-size: ${1.4 * Math.sqrt(3) * hR}px;
+    width: ${2 * hR}px;
+    height: ${Math.sqrt(3) * hR}px;
+    line-height: ${Math.sqrt(3) * hR}px;
+    text-align: center;
+    left: 0;
+    bottom: ${0.1 * Math.sqrt(3) * hR}px;
+}`
 
-            function randomColour() {
-                var h = 360 * Math.random();
-                var s = 100 * Math.random();
-                var l = 100 * Math.random();
-                return [h, s, l];
-            }
-
-            grid2.renderHexagon = function(node, position, data){
-                if(data.colour === undefined) {
-                    data.colour = randomColour();
-                }
-                var h = (data.colour[0] + 360 * performance.now() / 5000.0) % 360.0;
-                var s = (data.colour[1] + 100 * performance.now() / 5000.0) % 100.0;
-                var l = (data.colour[2] + 100 * performance.now() / 5000.0) % 100.0;
-                var col = 'hsl(' + h + ',' + s + '%,' + l + '%)';
-                this.ctx.fillStyle = col;
-                this.ctx.strokeStyle = 'rgba(0,255,255,0.25)';
-                this.ctx.beginPath();
-                this.ctx.arc(position.x, position.y, this.hexagonRadius * 0.2, 0, 2 * Math.PI);
-                this.ctx.closePath();
-                this.ctx.fill();
-                hex.grid.canvas.strokeHexagon(this.ctx, position.x, position.y, this.hexagonRadius);
-            }
-
-            grid2.resize();
-
-            var then = 0;
-            function animate() {
-                requestAnimationFrame(animate);
-                var now = performance.now();
-                if(now - then >= 16) {
-                    then = now;
-                    grid2.render();
-                }
-            }
-
-            animate();
-
-
-            var grid3 = new hex.WebGLHexGrid(
-                document.getElementById('example3'), {
-                fps: 15,
-                preInitialise: function() {
-                    this.hexagonGeometry = hex.grid.webgl.makeHexoid(this.hexagonRadius * 0.8, this.hexagonRadius / 5.0);
                 }
             });
 
-            grid3.postUpdate = function() {
-                this.camera.position.x = 3 * Math.sin(performance.now() / 2000.0);
-                this.camera.position.z = 3 * Math.cos(performance.now() / 2000.0);
-                this.camera.position.y = 3 * Math.sin(performance.now() / 2000.0);
-                this.camera.lookAt(this.focusPoint);
-            }
 
-            grid3.resize();
-            grid3.animate();
+            grid.nodeData[grid.center].element.innerHTML ='hex.js';
+            var neighbours = grid.center.neighbours();
+            
+            grid.nodeData[neighbours[0]].element.innerHTML = 'github';
+            grid.nodeData[neighbours[0]].element.href = 'http://github.com/hitcherland/hex.js';
+            grid.nodeData[neighbours[1]].element.innerHTML = 'docs';
+            grid.nodeData[neighbours[1]].element.href = '/docs';
+            grid.nodeData[neighbours[5]].element.innerHTML = 'examples';
+            grid.nodeData[neighbours[5]].element.href = '/examples';
+            grid.nodeData[neighbours[3]].element.innerHTML = 'download';
+            grid.nodeData[neighbours[3]].element.href = '/hex.js';
+            grid.nodeData[neighbours[4]].element.innerHTML = 'npm';
+            grid.nodeData[neighbours[4]].element.href = 'https://www.npmjs.com/package/libhex';
         </script>
     </body>
 </html>

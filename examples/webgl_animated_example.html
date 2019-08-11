@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>hex.js examples</title>
+        <link rel="stylesheet" type="text/css" href="example.css">
+    </head>
+    <body>
+        <script type="text/javascript" src="/hex.js"></script>
+        <pre id="code-show"></pre>
+        <div style="text-align:center">
+            <canvas id="grid"></canvas>
+        </div>
+        <script id="code">
+            var canvas = document.getElementById('grid');
+            var grid = new hex.WebGLHexagonalGrid({
+                canvas: canvas,
+                postUpdate: function() {
+                    this.camera.position.x = 3 * Math.sin(performance.now() / 2000.0);
+                    this.camera.position.z = 3 * Math.cos(performance.now() / 2000.0);
+                    this.camera.position.y = 3 * Math.sin(performance.now() / 2000.0);
+                    this.camera.lookAt(this.focusPoint);
+                }
+            });
+
+            grid.animate();
+        </script>
+        <script>
+            document.getElementById('code-show').innerHTML = document.getElementById('code').innerHTML;
+        </script>
+    </body>
+</html>
