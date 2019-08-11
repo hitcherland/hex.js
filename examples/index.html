@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>hex.js examples</title>
+        <style>
+            html, body {
+                margin: 0px; 
+                background: black;
+            }
+
+            #grid {
+                position: absolute;
+                width: 80%;
+                height: 80%;
+                top: 10%;
+                left: 10%;
+                font-size: 2.5vmin;
+            }
+
+            .node {
+                text-transform: uppercase;
+                font-weight: bold;
+                font-family: sans-serif;
+                color: #000;
+                text-decoration: none;
+            }
+
+            .node:hover {
+                font-size: 150%;
+            }
+
+            .node:before {
+                content: "⬣";
+                color: white;
+                text-shadow: 0px 0px 3px white;
+                z-index: -1;
+                font-weight: lighter;
+                font-family: monospace;
+            }
+
+            .node:hover:before {
+                color: #ddd;
+            }
+
+            [data-hex_r="0"][data-hex_q="0"].node {
+                font-size: 150%;
+                color: white;
+            }
+
+            [data-hex_r="0"][data-hex_q="0"].node:before {
+                color: black;
+                text-shadow: 0px 0px 3px black;
+            }
+
+
+            [data-hex_r="0"][data-hex_q="0"].node:hover {
+                font-size: 170%;
+            }
+
+            [data-hex_r="-1"][data-hex_q="0"].node,
+            [data-hex_r="1"][data-hex_q="0"].node {
+                display: none;
+            }
+
+            /* Background animation courtesy of Manuel Pinto
+             * https://codepen.io/P1N2O/pen/pyBNzX
+             * https://manuelpinto.in
+             */
+            body {
+                width: 100%;
+                height: 100vh;
+                color: #fff;
+                background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+                background-size: 400% 400%;
+                animation: gradientBG 60s ease infinite;
+            }
+
+            @keyframes gradientBG {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <script type="text/javascript" src="../hex.js"></script>
+        <div id="grid"></div>
+        <script>
+            var domParent = document.getElementById('grid');
+            var grid = new hex.DOMHexagonalGrid({
+                radius: 1,
+                domParent: domParent,
+                elementType: 'a',
+                postInitialise: function() {
+                    var rect = this._pre_rect;
+                    var hR = this.calculateNodeRadius(rect.width, rect.height);
+
+                    hex.DOMHexagonalGrid.prototype.postInitialise.call(this);
+
+                    this.style.innerHTML += `
+[data-hexgrid="${this.domParent.dataset.hexgrid}"] .node:before { 
+    position: absolute;
+    font-size: ${1.4 * Math.sqrt(3) * hR}px;
+    width: ${2 * hR}px;
+    height: ${Math.sqrt(3) * hR}px;
+    line-height: ${Math.sqrt(3) * hR}px;
+    text-align: center;
+    left: 0;
+    bottom: ${0.1 * Math.sqrt(3) * hR}px;
+}`
+
+                }
+            });
+
+
+            grid.nodeData[grid.center].element.innerHTML ='examples';
+            var neighbours = grid.center.neighbours();
+
+
+
+
+            
+            grid.nodeData[neighbours[5]].element.innerHTML = 'canvas';
+            grid.nodeData[neighbours[5]].element.href = './canvas_animated_example.html'
+            grid.nodeData[neighbours[1]].element.innerHTML = 'simple';
+            grid.nodeData[neighbours[1]].element.href = './canvas_basic_example.html';
+            grid.nodeData[neighbours[4]].element.innerHTML = 'DOM';
+            grid.nodeData[neighbours[4]].element.href = './dom_example.html';
+            grid.nodeData[neighbours[0]].element.innerHTML = 'WebGL';
+            grid.nodeData[neighbours[0]].element.href = './webgl_animated_example.html';
+        </script>
+    </body>
+</html>
