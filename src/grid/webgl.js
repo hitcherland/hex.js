@@ -1,3 +1,7 @@
+/** A WebGL implementation of grid.base.BaseHexagonalGrid using three.js
+ * @module grid.webgl
+ */
+
 var base = require('./base.js')
 
 import {
@@ -27,35 +31,18 @@ function makeHexoid(radius, height) {
     });
 }
 
-class WebGLHexGrid extends base.BaseHexGrid {
-   constructor(canvas, options={}) {
+class WebGLHexagonalGrid extends base.BaseHexagonalGrid {
+   constructor(options={}) {
         super(options);
-
-        this.canvas = canvas;
         this.last_update_time = 0;
-        this.camera = new OrthographicCamera(-1, 1, -1, 1, 0.01, 6);
-        this.camera.position.z = 1;
 
-        this.scene = new Scene();
-        this.camera.lookAt(this.focusPoint);
-        this.renderer = new WebGLRenderer({canvas: this.canvas, antialias: true});
-
-        this.hexagonMaterial = new MeshNormalMaterial();
-
-        var this_ = this;
         if(this.autoResize) {
+            var this_ = this;
             this.resizeListener = window.addEventListener('resize', () => {
                 this_.resize();
             });
+            this.resize();
         }
-
-        var hR = this.hexagonRadius;
-        this.preInitialise();
-        for(var hexagon of Object.values(this.hexagons)) {
-            var cartesian = hexagon.node.to_cartesian(hR);
-            this.initialiseHexagon(hexagon.node, cartesian, hexagon.data);
-        }
-        this.postInitialise();
     }
 
     render() {
@@ -64,7 +51,7 @@ class WebGLHexGrid extends base.BaseHexGrid {
 
     resize() {
         var rect = this.canvas.getBoundingClientRect();
-        var size = this.calculateGridWidth(this.hexagonRadius);
+        var size = this.calculateGridWidth(this.nodeRadius);
         var ratio = rect.width / rect.height;
         var w = Math.max(size.width, size.height);
         var h = w * ratio; 
@@ -83,62 +70,51 @@ class WebGLHexGrid extends base.BaseHexGrid {
         this.render();
     }
 
-    initialiseHexagon(node, position, data) {
+    preInitialise() {
+        super.preInitialise();
+        this.camera = new OrthographicCamera(-1, 1, -1, 1, 0.01, 6);
+        this.camera.position.z = 1;
+        this.camera.lookAt(this.focusPoint);
+
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({canvas: this.canvas, antialias: true});
+
+        this.hexagonMaterial = new MeshNormalMaterial();
+        this.hexagonGeometry = makeHexoid(this.nodeRadius * 0.8,
+                                          this.nodeRadius / 5.0);
+
+
+    }
+
+    initialiseNode(node, data) {
+        var position = node.to_cartesian(this.nodeRadius);
         data.mesh = new Mesh(this.hexagonGeometry, this.hexagonMaterial);
         data.mesh.position.x = position.x;
         data.mesh.position.y = position.y;
         this.scene.add(data.mesh);
     }
 
-    update() {
-        var hR = this.hexagonRadius;
-        this.preUpdate();
-        for(var hexagon of Object.values(this.hexagons)) {
-            var cartesian = hexagon.node.to_cartesian(hR);
-            this.updateHexagon(hexagon.node, cartesian, hexagon.data);
-        }
-        this.postUpdate();
-    }
-
-    preUpdate() {}
-    postUpdate() {}
-
-    updateHexagon(node, position, data) {
+    updateNode(node, data) {
         data.mesh.rotation.x = performance.now() * node.q / 2000.0;
         data.mesh.rotation.y = performance.now() * node.r / 2000.0;
         data.mesh.rotation.z = performance.now() * node.s / 2000.0;
     }
-
-
-
-    animate() {
-        var this_ = this;
-        requestAnimationFrame(() => { this_.animate(); })
-        this.update();
-        var now = performance.now();
-        if(now - this.last_update_time >= 1000.0 / this.fps) {
-             this.last_update_time = now;
-            this.render();
-        }
-    }
 }
 
-WebGLHexGrid.prototype.default_options = Object.assign(
+WebGLHexagonalGrid.prototype.default_options = Object.assign(
     {},
-    base.BaseHexGrid.prototype.default_options,
+    base.BaseHexagonalGrid.prototype.default_options,
     {
+        'canvas': undefined,
         'focusPoint': new Vector3(0, 0, 0),
         'canvasPadding': {x: 0, y: 0},
         'autoResize': true,
-        'fps': 60,
-        'hexagonRadius': 0.2,
-        'preInitialise': () => {},
-        'postInitialise': () => {},
+        'nodeRadius': 0.2,
     }
 )
 
 export default {
-    WebGLHexGrid: WebGLHexGrid,
+    WebGLHexagonalGrid: WebGLHexagonalGrid,
     makeHexagonShape: makeHexagonShape,
     makeHexoid: makeHexoid
 }

@@ -3,9 +3,10 @@ var grid = require('./grid.js');
 
 window.hex = module.exports = {
     grid: grid,
-    BaseHexGrid: grid.BaseHexGrid,
-    CanvasHexGrid: grid.CanvasHexGrid,
-    WebGLHexGrid: grid.WebGLHexGrid,
+    BaseHexagonalGrid: grid.BaseHexagonalGrid,
+    CanvasHexagonalGrid: grid.CanvasHexagonalGrid,
+    WebGLHexagonalGrid: grid.WebGLHexagonalGrid,
+    DOMHexagonalGrid: grid.DOMHexagonalGrid,
     HexNode: hexnode.HexNode,
     HexNodeType: hexnode.HexNodeType,
 }

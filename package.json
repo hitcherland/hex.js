@@ -3,10 +3,11 @@
   "version": "1.0.8",
   "description": "a library for making hexagonal based canvas things",
   "scripts": {
-    "build": "npx webpack",
+    "build": "npm run build:jsdoc; npm run build:production",
+    "build:jsdoc": "npx jsdoc -r src -d dist/docs",
     "build:production": "npx webpack --mode=production",
-    "build:examples": "npx webpack --mode=development --output-path ./examples",
-    "start:examples": "npx webpack-dev-server --content-base ./examples"
+    "start": "npx webpack-dev-server --content-base ./dist",
+    "publish": "npm run build; npx gh-pages -d dist"
   },
   "main": "src/index.js",
   "keywords": [
@@ -17,6 +18,8 @@
   "author": "hitcherland",
   "license": "ISC",
   "devDependencies": {
+    "gh-pages": "^2.1.1",
+    "jsdoc": "^3.6.3",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.8.0"
