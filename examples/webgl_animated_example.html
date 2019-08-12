@@ -2,18 +2,18 @@
 <html>
     <head>
         <meta charset='utf-8'>
-        <title>hex.js examples</title>
+        <title>hexgrid.js examples</title>
         <link rel="stylesheet" type="text/css" href="example.css">
     </head>
     <body>
-        <script type="text/javascript" src="../hex.js"></script>
+        <script type="text/javascript" src="../hexagonal-grid.min.js"></script>
         <pre id="code-show"></pre>
         <div style="text-align:center">
             <canvas id="grid"></canvas>
         </div>
         <script id="code">
             var canvas = document.getElementById('grid');
-            var grid = new hex.WebGLHexagonalGrid({
+            var grid = new hexgrid.WebGLHexagonalGrid({
                 canvas: canvas,
                 postUpdate: function() {
                     this.camera.position.x = 3 * Math.sin(performance.now() / 2000.0);

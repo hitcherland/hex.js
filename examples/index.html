@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset='utf-8'>
-        <title>hex.js examples</title>
+        <title>hexagonal-grid.js examples</title>
         <style>
             html, body {
                 margin: 0px; 
@@ -90,11 +90,11 @@
         </style>
     </head>
     <body>
-        <script type="text/javascript" src="../hex.js"></script>
+        <script type="text/javascript" src="../hexagonal-grid.min.js"></script>
         <div id="grid"></div>
         <script>
             var domParent = document.getElementById('grid');
-            var grid = new hex.DOMHexagonalGrid({
+            var grid = new hexgrid.DOMHexagonalGrid({
                 radius: 1,
                 domParent: domParent,
                 elementType: 'a',
@@ -102,7 +102,7 @@
                     var rect = this._pre_rect;
                     var hR = this.calculateNodeRadius(rect.width, rect.height);
 
-                    hex.DOMHexagonalGrid.prototype.postInitialise.call(this);
+                    hexgrid.DOMHexagonalGrid.prototype.postInitialise.call(this);
 
                     this.style.innerHTML += `
 [data-hexgrid="${this.domParent.dataset.hexgrid}"] .node:before { 

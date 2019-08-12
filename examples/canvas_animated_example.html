@@ -2,11 +2,11 @@
 <html>
     <head>
         <meta charset='utf-8'>
-        <title>hex.js / examples / animated canvas</title>
+        <title>hexagonal-grid.js / examples / animated canvas</title>
         <link rel="stylesheet" type="text/css" href="example.css">
     </head>
     <body>
-        <script type="text/javascript" src="../hex.js"></script>
+        <script type="text/javascript" src="../hexagonal-grid.min.js"></script>
         <pre id="code-show"></pre>
         <div style="text-align: center;">
             <canvas id="grid"></canvas>
@@ -14,7 +14,7 @@
         <script id="code">
             var canvas = document.getElementById('grid');
             
-            var grid = new hex.CanvasHexagonalGrid(canvas, {
+            var grid = new hexgrid.CanvasHexagonalGrid(canvas, {
                 radius: 5,
                 renderNode: function(node, data) {
                     if(data.colour === undefined) {
@@ -34,7 +34,7 @@
                     this.ctx.arc(position.x, position.y, hR * 0.2, 0, 2 * Math.PI);
                     this.ctx.closePath();
                     this.ctx.fill();
-                    hex.grid.canvas.strokeHexagon(this.ctx, position.x, position.y, hR);
+                    hexgrid.grid.canvas.strokeHexagon(this.ctx, position.x, position.y, hR);
                 }
             });
 

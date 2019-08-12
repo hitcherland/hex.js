@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: grid/webgl.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: grid/webgl.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** A WebGL implementation of grid.base.BaseHexagonalGrid using three.js
+ * @module hexgrid.grid.webgl
+ */
+
+var base = require('./base.js')
+
+import {
+    OrthographicCamera, Scene, Camera,
+    BoxGeometry, MeshNormalMaterial, Mesh,
+    Shape, ExtrudeGeometry,
+    WebGLRenderer, Vector3
+} from "three";
+
+function makeHexagonShape(radius) {
+    var shape = new Shape();
+    shape.moveTo(radius, 0);
+    for(var i=1; i&lt;6; i++) {
+        shape.lineTo(radius * Math.cos(i * Math.PI / 3.0),
+                     radius * Math.sin(i * Math.PI / 3.0));
+    }
+    return shape;
+}
+
+function makeHexoid(radius, height) {
+    var shape = makeHexagonShape(radius * 0.8);
+    return new ExtrudeGeometry(shape, {
+        depth: height,
+        bevelEnabled: true,
+        bevelSize: radius * 0.2,
+        bevelThickness: height 
+    });
+}
+
+class WebGLHexagonalGrid extends base.BaseHexagonalGrid {
+   constructor(options={}) {
+        super(options);
+        this.last_update_time = 0;
+
+        if(this.autoResize) {
+            var this_ = this;
+            this.resizeListener = window.addEventListener('resize', () => {
+                this_.resize();
+            });
+            this.resize();
+        }
+    }
+
+    render() {
+        this.renderer.render(this.scene, this.camera);
+    }
+
+    resize() {
+        var rect = this.canvas.getBoundingClientRect();
+        var size = this.calculateGridWidth(this.nodeRadius);
+        var ratio = rect.width / rect.height;
+        var w = Math.max(size.width, size.height);
+        var h = w * ratio; 
+
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+        this.camera.aspect = rect.width / rect.height;
+
+        this.camera.left = -w/2.0;
+        this.camera.right = w/2.0;
+        this.camera.top = -h/2.0;
+        this.camera.bottom = h/2.0;
+
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(rect.width, rect.height, false);
+        this.render();
+    }
+
+    preInitialise() {
+        super.preInitialise();
+        this.camera = new OrthographicCamera(-1, 1, -1, 1, 0.01, 6);
+        this.camera.position.z = 1;
+        this.camera.lookAt(this.focusPoint);
+
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({canvas: this.canvas, antialias: true});
+
+        this.hexagonMaterial = new MeshNormalMaterial();
+        this.hexagonGeometry = makeHexoid(this.nodeRadius * 0.8,
+                                          this.nodeRadius / 5.0);
+
+
+    }
+
+    initialiseNode(node, data) {
+        var position = node.to_cartesian(this.nodeRadius);
+        data.mesh = new Mesh(this.hexagonGeometry, this.hexagonMaterial);
+        data.mesh.position.x = position.x;
+        data.mesh.position.y = position.y;
+        this.scene.add(data.mesh);
+    }
+
+    updateNode(node, data) {
+        data.mesh.rotation.x = performance.now() * node.q / 2000.0;
+        data.mesh.rotation.y = performance.now() * node.r / 2000.0;
+        data.mesh.rotation.z = performance.now() * node.s / 2000.0;
+    }
+}
+
+WebGLHexagonalGrid.prototype.default_options = Object.assign(
+    {},
+    base.BaseHexagonalGrid.prototype.default_options,
+    {
+        'canvas': undefined,
+        'focusPoint': new Vector3(0, 0, 0),
+        'canvasPadding': {x: 0, y: 0},
+        'autoResize': true,
+        'nodeRadius': 0.2,
+    }
+)
+
+export default {
+    WebGLHexagonalGrid: WebGLHexagonalGrid,
+    makeHexagonShape: makeHexagonShape,
+    makeHexoid: makeHexoid
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="hexgrid.grid.module_base.html">base</a></li><li><a href="hexgrid.grid.module_canvas.html">canvas</a></li><li><a href="hexgrid.grid.module_dom.html">dom</a></li><li><a href="hexgrid.grid.module_webgl.html">webgl</a></li><li><a href="hexgrid.module_grid.html">grid</a></li><li><a href="module-hexgrid.html">hexgrid</a></li></ul><h3>Classes</h3><ul><li><a href="hexgrid.grid.module_base-BaseHexagonalGrid.html">BaseHexagonalGrid</a></li><li><a href="hexgrid.grid.module_canvas-CanvasHexagonalGrid.html">CanvasHexagonalGrid</a></li><li><a href="hexgrid.grid.module_dom-DOMHexagonalGrid.html">DOMHexagonalGrid</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Aug 12 2019 14:21:32 GMT+0100 (Irish Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
