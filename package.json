@@ -3,7 +3,7 @@
   "version": "1.0.8",
   "description": "a library for making hexagonal grids",
   "scripts": {
-    "build": "npm run build:jsdoc & npm run build:production & npm run build:development",
+    "build": "npm run build:jsdoc & npm run build:development & npm run build:production",
     "build:jsdoc": "npx jsdoc -r src -d dist/docs -R README.md",
     "build:production": "npx webpack -p --output ./dist/hexagonal-grid.min.js",
     "build:development": "npx webpack -d --output ./dist/hexagonal-grid.js",

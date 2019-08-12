@@ -1,4 +1,4 @@
-# hexgrid.js
+# hexagonal-grid.js
 
 A javascript library implementing hexagonal grids in various forms.
 
