@@ -1,7 +1,7 @@
 /**
  * A base class that defines nodes and their positions in a hexagonal grid
  * pattern.
- * @module grid.base
+ * @module hexgrid.grid.base
  */
 
 var node = require('../node.js')

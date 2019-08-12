@@ -1,6 +1,6 @@
 /** A html5 canvas implementation of grid.base.BaseHexagonalGrid, 
  * with some helper functions.
- * @module grid.canvas
+ * @module hexgrid.grid.canvas
  */
 
 var base = require('./base.js')
@@ -52,7 +52,25 @@ function strokeHexagon(ctx, x, y, radius) {
     ctx.stroke();
 }
 
+/**
+ * A hexagonal grid that uses HTML5's canvas.
+ * Extends `BaseHexagonalGrid`.
+ * @property {HTMLCanvasElement} canvas The canvas we are drawing to
+ * @property {CanvasRenderingContext2D} ctx The ContextRenderingContext2D
+ * instance of `CanvasHexagonalGrid.canvas`
+ */
 class CanvasHexagonalGrid extends base.BaseHexagonalGrid {
+    /**
+     * Construct a Canvas-based hexagonal grid. See 
+     * `BaseHexagonalGrid.constructor` for more valid options.
+     * @param {Object} options Optional values
+     * @param {Object} [options.canvasPadding={x: 0, y:0}] 
+     *     padding around the inside edge of the canvas, essentially shrinking
+     *     the render area of the canvas
+     * @param {boolean} [options.autoResize=true] Allow the grid to
+     * adjust with `resize` events automatically, using 
+     * `CanvasHexagonalGrid.resize()`.
+     */
    constructor(canvas, options={}) {
         super(options);
         this.canvas = canvas;
@@ -70,6 +88,28 @@ class CanvasHexagonalGrid extends base.BaseHexagonalGrid {
         }
     }
 
+    get canvas() {
+        return this._canvas;
+    }
+
+    set canvas(v) {
+        this._canvas = v;
+        this._ctx = v.getContext('2d');
+    }
+
+    get ctx() {
+        return this._ctx;
+    }
+
+    set ctx(v) {
+        this._ctx = v;
+        this._canvas = v.canvas;
+    }
+
+    /**
+     * Dynamic getter that defines the radius of each node, based on the size
+     * of `CanvasHexagonalGrid.canvas`
+     */
     get nodeRadius() {
         return this.calculateNodeRadius(
             this.canvas.width - this.canvasPadding.x,
@@ -77,10 +117,24 @@ class CanvasHexagonalGrid extends base.BaseHexagonalGrid {
         );
     }
 
+    /**
+     * Overridable function that is called at the start of 
+     * `CanvasHexagonalGrid.render()`. By default, it clears the entire 
+     * canvas using `this.ctx.clearRect`.
+     */
     preRender() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
+    /**
+     * Overridable function that is called during
+     * `CanvasHexagonalGrid.render()`, once for each node in
+     * `CanvasHexagonalGrid.nodes`. By default it strokes a black hexagon
+     * around the node, of size `CanvasHexagonalGrid.nodeRadius` using
+     * `strokeHexagon`.
+     * @param {HexNode} node A hexagonal node
+     * @param {Object} data The data stored relating to `node`.
+     */
     renderNode(node, data) {
         var hR = this.nodeRadius;
         var cartesian = node.to_cartesian(hR);
@@ -93,6 +147,11 @@ class CanvasHexagonalGrid extends base.BaseHexagonalGrid {
         this.ctx.restore();
     }
 
+    /**
+     * Sets the canvas width and height to the actual size in the document,
+     * and recalls `CanvasHexagonalGrid.render()` to ensure that everything 
+     * looks good.
+     */
     resize() {
         var rect = this.canvas.getBoundingClientRect();
         this.canvas.width = rect.width;
@@ -101,6 +160,10 @@ class CanvasHexagonalGrid extends base.BaseHexagonalGrid {
     }
 }
 
+/**
+ * Defines what the default values are for the options of this class when
+ * instantiated, see `HexagonalGrid.Constructor` for more details.
+ */
 CanvasHexagonalGrid.prototype.default_options = Object.assign(
     {},
     base.BaseHexagonalGrid.prototype.default_options,

@@ -1,3 +1,8 @@
+/**
+ * Container for all BaseHexagonalGrid subclasses and submodules
+ * @module hexgrid.grid
+ */
+
 var base = require('./grid/base.js');
 var canvas = require('./grid/canvas.js');
 var webgl = require('./grid/webgl.js').default;

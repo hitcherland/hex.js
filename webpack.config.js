@@ -4,7 +4,7 @@ module.exports = {
     devtool: 'source-map',
     mode: 'production',
     entry: {
-        hex: './src/index.js',
+        hexagonal_grid: './src/index.js',
     },
     output: {
         path: path.resolve(__dirname, "dist"),

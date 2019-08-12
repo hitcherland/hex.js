@@ -1,0 +1,4 @@
+[submodule "dist"]
+	path = dist
+	url = git@github.com:hitcherland/hex.js.git
+	branch = gh-pages

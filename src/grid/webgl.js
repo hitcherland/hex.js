@@ -1,5 +1,5 @@
 /** A WebGL implementation of grid.base.BaseHexagonalGrid using three.js
- * @module grid.webgl
+ * @module hexgrid.grid.webgl
  */
 
 var base = require('./base.js')
